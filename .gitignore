@@ -139,11 +139,11 @@ cython_debug/
 .vscode/
 
 
-artifacts/raw/
-artifacts/processed/
-artifacts/model/
-artifacts/weights/
-artifacts/model_checkpoint
+artifacts/raw
+# artifacts/processed/
+# artifacts/model/
+# artifacts/weights/
+# artifacts/model_checkpoint
 
 # .dvc/
 
