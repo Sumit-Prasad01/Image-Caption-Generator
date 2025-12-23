@@ -7,3 +7,4 @@ kagglehub
 tensorflow
 tqdm
 streamlit
+fastapi
