@@ -152,12 +152,14 @@ class DataProcessing:
                 self.features[image] = feature
             
             self.fe.save(FEATURE_EXTRACTED_PATH)
+
+            logger.info(f"All features extracted and saved successfully and saved to {FEATURE_EXTRACTED_PATH}.")
         
         except Exception as e:
             logger.error("Failed to extract and save image features.")
             raise CustomException("Error while extracting and saving image features.", e)
         
-    
+   
     def generate_custom_data(self):
 
         try:
@@ -184,3 +186,35 @@ class DataProcessing:
                                         max_length = self.max_length,
                                         features = self.features
                                         )
+            
+
+            
+            return train_generator, validation_generator
+        
+        except Exception as e:
+            logger.error("Failed to generate custom data.")
+            raise CustomException("Error while generating custom data.", e)
+        
+    def run(self):
+
+        try:
+            logger.info("Executing the data processing pipeline.")
+            self.load_captions()
+            self.readImage()
+            self.text_preprocessing()
+            self.tokenize_and_save_and_split_data()
+            self.extract_and_save_image_features()
+
+            logger.info("Data processing pipeline executed successfully.")
+
+        except Exception as e:
+            logger.error("Faled to execute data processing pipeline.")
+            raise CustomException("Error while executing data processing pipeline.", e)
+
+
+        
+
+if __name__ == "__main__":
+
+    processor = DataProcessing(IMAGE_PATH, CAPTIONS_PATH)
+    processor.run()
