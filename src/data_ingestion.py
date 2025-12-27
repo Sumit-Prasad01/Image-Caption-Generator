@@ -94,4 +94,4 @@ if __name__ == "__main__":
         ingestion = DataIngestion(DATASET_NAME, TARGET_DIR)
         ingestion.run()
     except Exception as e:
-        logger.error(f"Pipeline crashed: {e}")
+        logger.error(f" Data Ingestion Pipeline crashed: {e}")

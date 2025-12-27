@@ -2,25 +2,13 @@ import numpy as np
 import pandas as pd
 import os
 import tensorflow as tf
-import tqdm
-from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
-from tensorflow.keras.preprocessing.text import Tokenizer
-from tensorflow.keras.preprocessing.sequence import pad_sequences
-from tensorflow.keras.utils import Sequence
-from tensorflow.keras.utils import to_categorical
-from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, GlobalAveragePooling2D, Activation, Dropout, Flatten, Dense, Input, Layer
-from tensorflow.keras.layers import Embedding, LSTM, add, Concatenate, Reshape, concatenate, Bidirectional
-from tensorflow.keras.applications import VGG16, ResNet50, DenseNet201
-from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 import matplotlib.pyplot as plt
-from textwrap import wrap
-import pickle
+import joblib
 from src.logger import get_logger
 from src.custom_exception import CustomException
 from config.paths_config import *
-from src.model_architecture import CaptionModel 
+from utils.Loaders import Loader
 
 
 
@@ -28,13 +16,15 @@ logger = get_logger(__name__)
 
 class ModelTraining:
 
-    def __init__(self):
+    def __init__(self,model_name ,train_generator_path, validation_generator_path):
         self.history = None
-        self.model_name = "../artifacts/models/lstm_model.keras"
+        self.model_name = model_name
         self.checkpoint = None
         self.earlystopping = None
         self.learning_rate_reduction = None
         self.model = None
+        self.train_generator = train_generator_path
+        self.validation_generator = validation_generator_path
 
         logger.info("Model training pipeline initiated.")
 
@@ -59,18 +49,42 @@ class ModelTraining:
             logger.error("Failed to initialize model checpoint.")
             raise CustomException("Error while initializing model checkpoint.")
         
+
     
-    def load_and_train_model(self):
+    def train_model(self):
         try:
 
-            self.model = CaptionModel()
+            self.model = Loader.load_model()
 
-            self.history = caption_model.fit(
-                train_generator,
+            self.history = self.model.fit(
+                self.train_generator,
                 epochs = 2,
-                validation_data = validation_generator,
-                callbacks = [checkpoint, earlystopping, learning_rate_reduction]
+                validation_data = self.validation_generator,
+                callbacks = [self.checkpoint, self.earlystopping, self.learning_rate_reduction]
             )
 
+            logger.info("Model training completed successfully.")
 
+        except Exception as e:
+            logger.error("Falied to train model.")
+            raise CustomException("Error while training model.", e)
         
+    
+    def run(self):
+        
+        try:
+
+            logger.info("Starting model training pipeline.")
+
+            self.initialize_model_checkpoint()
+            self.train_model()
+
+        except Exception as e:
+            logger.error("Failed to train model.")
+            raise CustomException("Error while training model", e)
+
+
+if __name__ == "__main__":
+
+    trainer = ModelTraining(SAVED_MODEL_PATH, TRAIN_GENERTOR_PATH, VALIDATION_GENERTOR_PATH)
+    trainer.run()

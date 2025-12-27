@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import tensorflow as tf
 import tqdm
+import joblib
 from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
@@ -40,7 +41,7 @@ class DataProcessing:
         self.train = None
         self.test = None
         self.vocab_size = None
-        self.max_lenght = None
+        self.max_length = None
         self.fe = None
         self.tokenizer = None
         self.features = {}
@@ -163,7 +164,7 @@ class DataProcessing:
     def generate_custom_data(self):
 
         try:
-            train_generator = CustomDataGenerator(
+            self.train_generator = CustomDataGenerator(
                                         df = self.train,
                                         X_col = 'image',
                                         y_col = 'caption',
@@ -175,7 +176,7 @@ class DataProcessing:
                                         features = self.features
                                         )
 
-            validation_generator = CustomDataGenerator(
+            self.validation_generator = CustomDataGenerator(
                                         df = self.test,
                                         X_col = 'image',
                                         y_col = 'caption',
@@ -187,10 +188,9 @@ class DataProcessing:
                                         features = self.features
                                         )
             
-
-            
-            return train_generator, validation_generator
-        
+            joblib.dump(self.train_generator, TRAIN_LOAD_PATH)
+            joblib.dump(self.validation_generator, VALIDATION_GENERTOR_PATH)
+     
         except Exception as e:
             logger.error("Failed to generate custom data.")
             raise CustomException("Error while generating custom data.", e)
@@ -204,6 +204,11 @@ class DataProcessing:
             self.text_preprocessing()
             self.tokenize_and_save_and_split_data()
             self.extract_and_save_image_features()
+            self.generate_custom_data()
+
+            # save vocab_size and max_len
+            joblib.dump(self.vocab_size, VOCAB_SIZE_PATH)
+            joblib.dump(self.max_length, MAX_LENGTH_PATH)
 
             logger.info("Data processing pipeline executed successfully.")
 
